@@ -1,0 +1,26 @@
+.seed-demo{width:100%;border:0;background:var(--navy);color:#fff;padding:12px;margin-top:20px;font-size:12px}
+.simultaneous{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(360px,.75fr);gap:14px;padding:18px 0}
+.sim-projection,.sim-person{background:#fff;border:1px solid var(--line);min-width:0}
+.sim-projection>header,.sim-person>header{min-height:62px;padding:13px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sim-projection header small,.sim-person header small{font-size:9px;letter-spacing:.11em;color:#896434;font-weight:800}
+.sim-projection header b{font-size:12px}
+.sim-person select{max-width:240px;padding:8px;border:1px solid var(--line);background:#fff}
+.scaled-shared{padding:0 20px;max-height:690px;overflow:auto}
+.simultaneous .waiting,.simultaneous .shared{padding-top:24px}
+.simultaneous .shared h1,.simultaneous .waiting h1{font-size:31px}
+.simultaneous .metrics{grid-template-columns:repeat(5,1fr)}
+.simultaneous .metrics article{padding:11px}
+.simultaneous .metrics b{font-size:20px}
+.sim-person .participant-card{border:0;margin:0;min-height:625px}
+.business-rule{background:#eee5d5;border-left:4px solid var(--gold);padding:16px;margin:18px 0}
+.business-rule small,.business-rule b{display:block}
+.business-rule small,.agent-workflow>small{font-size:9px;letter-spacing:.11em;color:#896434;font-weight:800}
+.business-rule b{font:18px/1.4 Georgia;margin-top:7px}
+.agent-workflow{border:1px solid var(--line);padding:17px}
+.agent-workflow ol{padding-left:22px}
+.agent-workflow li{padding:8px 0}
+.agent-workflow li b,.agent-workflow li span{display:block}
+.agent-workflow li b{font-size:13px}
+.agent-workflow li span{font-size:12px;line-height:1.4;color:var(--muted);margin-top:3px}
+@media(max-width:1100px){.simultaneous{grid-template-columns:1fr}.simultaneous .metrics{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.simultaneous .metrics{grid-template-columns:1fr}.sim-projection>header,.sim-person>header{align-items:flex-start;flex-direction:column}}

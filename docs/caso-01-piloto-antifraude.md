@@ -1,5 +1,7 @@
 # Caso 01 — Piloto de prevenção a fraudes
 
+> **Documento legado.** Este caso antecede o modelo universal do simulador e não deve orientar a interface atual. A especificação canônica está em `docs/modelo-do-simulador.md`. O conteúdo abaixo poderá ser convertido futuramente em uma missão compatível.
+
 ## Finalidade pedagógica
 
 Este caso ensina como uma decisão operacional com IA é produzida por uma cadeia formada por modelos, agentes, ferramentas, dados, regras, permissões, sistemas e pessoas.

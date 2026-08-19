@@ -1,155 +1,84 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-const lessons = [
-  {
-    tab: "1. Entender a operação",
-    title: "Antes da tecnologia, qual decisão esta operação precisa produzir?",
-    say: "Uma transferência não é simplesmente aprovada por uma IA. O banco reúne informações, interpreta o risco, aplica suas regras e executa uma ação.",
-    ask: "Que decisões precisam acontecer entre o pedido do cliente e a movimentação do dinheiro?",
-    advance: "Avance depois que a turma distinguir análise, decisão e execução.",
-  },
-  {
-    tab: "2. Ver a arquitetura",
-    title: "Como o banco implementou essa operação",
-    say: "Agora vamos ligar cada etapa do processo a um componente técnico. O importante não é decorar nomes, mas entender a função de cada parte.",
-    ask: "Qual componente interpreta? Qual coordena? Qual autoriza? Qual executa?",
-    advance: "Avance quando a turma conseguir narrar o fluxo da esquerda para a direita.",
-  },
-  {
-    tab: "3. Abrir o agente",
-    title: "O agente tem um objetivo, ferramentas e limites",
-    say: "O agente de contexto não sabe tudo e não movimenta dinheiro. Ele recebe um objetivo e pode usar somente as ferramentas que foram disponibilizadas.",
-    ask: "O que esse agente consegue fazer? E o que ele não consegue fazer?",
-    advance: "Avance quando estiver clara a diferença entre agente, ferramenta e sistema conectado.",
-  },
-  {
-    tab: "4. Separar poderes",
-    title: "Recomendar, autorizar e executar são ações diferentes",
-    say: "O agente recomenda. A regra do banco autoriza uma ação. Uma identidade técnica executa essa ação no sistema de pagamentos.",
-    ask: "Se a retenção foi inadequada, em qual dessas três camadas devemos procurar a causa?",
-    advance: "Avance depois de mostrar que o resultado pertence à cadeia completa.",
-  },
-  {
-    tab: "5. Simular o incidente",
-    title: "Agora a turma usa a arquitetura para explicar o que aconteceu",
-    say: "O piloto está no dia 17. Uma transferência foi retida, o cliente contestou e o tratamento humano não responderá dentro do prazo.",
-    ask: "Que evidência precisamos consultar antes de decidir o que fazer?",
-    advance: "A simulação avança quando a mesa consulta três evidências e toma uma decisão de contenção.",
-  },
-  {
-    tab: "6. Voltar ao desenho",
-    title: "O que precisa mudar antes de ampliar o piloto?",
-    say: "Voltamos ao mesmo diagrama. Agora destacamos o ponto de falha e avaliamos como cada alteração resolve um problema e cria uma nova condição.",
-    ask: "Que mudança é necessária, quem precisa aprová-la e que novo risco ela introduz?",
-    advance: "Encerre quando a mesa conseguir explicar o novo desenho e a exposição que decidiu aceitar.",
-  },
-];
+type Phase = "lobby" | "reading" | "sharing" | "decision" | "feedback";
+type PersonId = "ana" | "bruno" | "carla" | "diego";
 
-const evidences = [
-  { id: "log", label: "Ver o que o agente consultou", answer: "O agente consultou uma cópia do CRM atualizada a cada seis horas. A viagem havia sido informada 20 minutos antes." },
-  { id: "rule", label: "Ver qual regra foi aplicada", answer: "A regra R-17 retém transferências com score acima de 0,82 quando uma viagem não é encontrada." },
-  { id: "queue", label: "Ver a fila humana", answer: "A revisão levará aproximadamente 40 minutos. Restam 18 minutos para concluir a transferência." },
-  { id: "auth", label: "Ver a autenticação", answer: "A autenticação foi concluída, mas seu resultado está em um sistema que o agente não consulta." },
-];
+const people: Record<PersonId, { name: string; initials: string; responsibility: string; privateInfo: string; contribution: string }> = {
+  ana: { name: "Ana", initials: "AN", responsibility: "Risco", privateInfo: "A regra que reteve a transferência foi criada antes da entrada do agente de contexto.", contribution: "A regra R-17 não considera autenticação adicional. Ela apenas combina o score de fraude e a existência de viagem." },
+  bruno: { name: "Bruno", initials: "BR", responsibility: "Tecnologia", privateInfo: "O agente não consulta o CRM original. Ele consulta uma cópia atualizada a cada seis horas.", contribution: "A viagem pode existir no CRM e ainda não estar disponível para o agente. Uma consulta direta levaria cerca de 900 milissegundos." },
+  carla: { name: "Carla", initials: "CA", responsibility: "Operação", privateInfo: "A revisão humana leva cerca de 40 minutos. A transferência perde o prazo em 18 minutos.", contribution: "A fila humana não resolve este caso a tempo. Hoje ela tem 23 casos aguardando análise." },
+  diego: { name: "Diego", initials: "DI", responsibility: "Negócio", privateInfo: "O cliente concluiu uma autenticação adicional e precisa pagar um fornecedor ainda hoje.", contribution: "Manter a retenção faz a operação perder o prazo. Liberar preserva o pagamento, mas mantém uma exposição de fraude." },
+};
 
-const decisions = [
-  { id: "hold", title: "Manter a retenção", result: "A transferência perde o prazo antes da revisão humana." },
-  { id: "release", title: "Liberar por exceção", result: "A operação é concluída, mas alguém precisa aceitar e registrar a exposição residual." },
-  { id: "pause", title: "Suspender a automação", result: "Novas retenções deixam de acontecer, mas a fila manual cresce além da capacidade disponível." },
-];
-
-function BusinessFlow({ technical = false, highlight = false }: { technical?: boolean; highlight?: boolean }) {
-  const steps = technical
-    ? [
-        ["1", "Orquestrador", "Coordena a sequência e guarda o estado"],
-        ["2", "Modelo de fraude", "Produz um score de risco"],
-        ["3", "Agente de contexto", "Procura informações usando ferramentas"],
-        ["4", "Motor de regras", "Determina qual ação está autorizada"],
-        ["5", "API de pagamentos", "Executa a retenção ou a liberação"],
-        ["6", "Fila humana", "Trata situações que o fluxo não resolve"],
-      ]
-    : [
-        ["1", "Receber", "O cliente solicita a transferência"],
-        ["2", "Analisar", "O banco avalia risco e contexto"],
-        ["3", "Decidir", "Uma regra escolhe o caminho permitido"],
-        ["4", "Executar", "O dinheiro é liberado ou retido"],
-        ["5", "Tratar exceção", "Uma pessoa entra quando necessário"],
-      ];
-  return <div className={`plain-flow ${technical ? "technical" : ""}`}>
-    {steps.map((step, index) => <div className="flow-wrap" key={step[1]}><article className={highlight && step[1] === "Agente de contexto" ? "highlight" : ""}><span>{step[0]}</span><div><b>{step[1]}</b><p>{step[2]}</p></div></article>{index < steps.length - 1 && <i>→</i>}</div>)}
-  </div>;
-}
+const order: PersonId[] = ["ana", "bruno", "carla", "diego"];
+const phaseLabels: Record<Phase, string> = { lobby: "Sala de espera", reading: "Leitura individual", sharing: "Compartilhar informações", decision: "Decisão da mesa", feedback: "Consequência" };
 
 export default function Home() {
-  const [step, setStep] = useState(0);
-  const [opened, setOpened] = useState<string[]>([]);
-  const [decision, setDecision] = useState<string | null>(null);
-  const [participantView, setParticipantView] = useState(false);
-  const lesson = lessons[step];
-  const currentResult = decisions.find((item) => item.id === decision)?.result;
+  const [phase, setPhase] = useState<Phase>("lobby");
+  const [selected, setSelected] = useState<PersonId>("ana");
+  const [ready, setReady] = useState<PersonId[]>([]);
+  const [shared, setShared] = useState<PersonId[]>([]);
+  const [decision, setDecision] = useState<"hold" | "release" | "pause" | null>(null);
+  const [mainView, setMainView] = useState<"people" | "shared" | "architecture">("people");
 
-  function next() { setStep((value) => Math.min(lessons.length - 1, value + 1)); }
-  function previous() { setStep((value) => Math.max(0, value - 1)); }
+  const doneCount = phase === "reading" ? ready.length : phase === "sharing" ? shared.length : 0;
+  const canAdvance = phase === "lobby" || (phase === "reading" && ready.length === 4) || (phase === "sharing" && shared.length === 4) || (phase === "decision" && !!decision);
+  const nextLabel = phase === "lobby" ? "Iniciar sessão" : phase === "reading" ? "Abrir compartilhamento" : phase === "sharing" ? "Abrir decisão" : phase === "decision" ? "Mostrar consequência" : "Sessão concluída";
+  const statusText = useMemo(() => {
+    if (phase === "lobby") return "As quatro pessoas estão conectadas. A sessão ainda não começou.";
+    if (phase === "reading") return `${ready.length} de 4 participantes terminaram a leitura.`;
+    if (phase === "sharing") return `${shared.length} de 4 informações foram compartilhadas.`;
+    if (phase === "decision") return decision ? "A mesa escolheu uma decisão. Você já pode revelar a consequência." : "A mesa ainda precisa escolher uma decisão.";
+    return "A consequência está visível para todos.";
+  }, [phase, ready, shared, decision]);
 
-  return <main>
-    <header className="topbar">
-      <div className="brand"><span className="brand-mark">O</span><span>ORQUESTRA</span><small>LAB</small></div>
-      <div className="session-meta">AULA GUIADA · PILOTO DE PREVENÇÃO A FRAUDES</div>
-      <button className="view-participant" onClick={() => setParticipantView(!participantView)}>{participantView ? "Voltar ao facilitador" : "Ver tela da turma"}</button>
-    </header>
+  function advance() {
+    if (!canAdvance || phase === "feedback") return;
+    const next: Record<Exclude<Phase, "feedback">, Phase> = { lobby: "reading", reading: "sharing", sharing: "decision", decision: "feedback" };
+    setPhase(next[phase]);
+    setMainView(phase === "sharing" ? "shared" : "people");
+  }
 
-    <nav className="lesson-nav">{lessons.map((item, index) => <button key={item.tab} className={`${index === step ? "active" : ""} ${index < step ? "done" : ""}`} onClick={() => setStep(index)}><span>{index < step ? "✓" : index + 1}</span>{item.tab.replace(/^\d\. /, "")}</button>)}</nav>
+  function actAs(person: PersonId) {
+    if (phase === "reading" && !ready.includes(person)) setReady([...ready, person]);
+    if (phase === "sharing" && !shared.includes(person)) setShared([...shared, person]);
+  }
 
-    <div className={`lesson-layout ${participantView ? "participant-only" : ""}`}>
-      {!participantView && <aside className="facilitator-guide">
-        <div className="guide-title"><small>SEU ROTEIRO</small><h2>{lesson.tab}</h2></div>
-        <section className="guide-now"><small>AGORA, EXPLIQUE</small><p>{lesson.say}</p></section>
-        <section><small>PERGUNTE À TURMA</small><blockquote>“{lesson.ask}”</blockquote></section>
-        <section><small>QUANDO AVANÇAR</small><p>{lesson.advance}</p></section>
-        <div className="guide-actions"><button onClick={previous} disabled={step === 0}>← Voltar</button><button className="next" onClick={next} disabled={step === lessons.length - 1}>Avançar explicação →</button></div>
-      </aside>}
+  const current = people[selected];
 
-      <section className="projected-screen">
-        <div className="projected-label"><span>TELA PROJETADA PARA A TURMA</span><b>{step + 1} de {lessons.length}</b></div>
-        <header className="lesson-heading"><small>{lesson.tab.toUpperCase()}</small><h1>{lesson.title}</h1></header>
+  return <main className="lab-app">
+    <header className="app-header"><div className="app-brand"><span>O</span><b>ORQUESTRA LAB</b></div><div><strong>Sessão ORQ-241</strong><small>Piloto de prevenção a fraudes</small></div><span className="live">● AO VIVO</span></header>
 
-        {step === 0 && <section className="lesson-card">
-          <div className="business-case"><span>O PEDIDO</span><h2>Um cliente solicita uma transferência de R$ 180 mil.</h2><p>Entre o pedido e a movimentação do dinheiro, a organização precisa produzir uma decisão.</p></div>
-          <BusinessFlow />
-          <div className="takeaway"><b>Ideia central</b><span>Primeiro entendemos a decisão. Depois observamos como a tecnologia a produz.</span></div>
-        </section>}
+    <div className="app-shell">
+      <aside className="facilitator-sidebar">
+        <small>PAINEL DO FACILITADOR</small><h1>{phaseLabels[phase]}</h1>
+        <div className="phase-summary"><b>O que está acontecendo agora</b><p>{statusText}</p></div>
+        {phase !== "lobby" && phase !== "feedback" && <div className="progress"><div><span>Progresso da rodada</span><b>{phase === "decision" ? (decision ? "1/1" : "0/1") : `${doneCount}/4`}</b></div><i><em style={{ width: phase === "decision" ? (decision ? "100%" : "0%") : `${doneCount * 25}%` }} /></i></div>}
+        <button className="advance" disabled={!canAdvance || phase === "feedback"} onClick={advance}>{nextLabel}<span>→</span></button>
+        {!canAdvance && <p className="waiting">O botão será liberado quando esta etapa estiver completa.</p>}
+        <div className="round-list"><small>ETAPAS DA SESSÃO</small>{(["lobby", "reading", "sharing", "decision", "feedback"] as Phase[]).map((item, index) => <div className={phase === item ? "current" : ""} key={item}><span>{index + 1}</span>{phaseLabels[item]}</div>)}</div>
+      </aside>
 
-        {step === 1 && <section className="lesson-card">
-          <div className="simple-intro"><p>O mesmo processo, agora visto como uma arquitetura técnica.</p><span>Clique em cada etapa durante sua explicação.</span></div>
-          <BusinessFlow technical />
-          <div className="plain-definition"><b>O que é orquestração aqui?</b><p>É a coordenação dessas partes para que uma solicitação atravesse análises, regras, sistemas e exceções até produzir um resultado.</p></div>
-        </section>}
+      <section className="facilitator-main">
+        <nav className="main-tabs"><button className={mainView === "people" ? "active" : ""} onClick={() => setMainView("people")}>Participantes</button><button className={mainView === "shared" ? "active" : ""} onClick={() => setMainView("shared")}>Tela compartilhada</button><button className={mainView === "architecture" ? "active" : ""} onClick={() => setMainView("architecture")}>Como o piloto funciona</button></nav>
 
-        {step === 2 && <section className="lesson-card agent-lesson">
-          <BusinessFlow technical highlight />
-          <div className="agent-open"><div><small>COMPONENTE ABERTO</small><h2>Agente de contexto</h2><p>Procura informações que ajudem a interpretar se a transferência faz sentido.</p></div><div className="agent-columns"><article><small>RECEBE</small><b>Um objetivo</b><p>“Procure sinais que tornem esta transferência plausível.”</p></article><article><small>PODE USAR</small><b>Duas ferramentas</b><p>Consultar viagem e consultar histórico.</p></article><article><small>NÃO PODE</small><b>Movimentar dinheiro</b><p>Não libera, não retém e não altera regras.</p></article></div></div>
-          <div className="takeaway"><b>Agente não é autonomia irrestrita</b><span>Sua capacidade depende do objetivo, das ferramentas e das permissões concedidas.</span></div>
-        </section>}
+        {mainView === "people" && <div className="people-workspace">
+          <section className="people-list"><header><div><small>PESSOAS CONECTADAS</small><h2>Escolha uma pessoa para ver seu celular</h2></div><b>4 online</b></header>{order.map((id) => { const person = people[id]; const completed = phase === "reading" ? ready.includes(id) : phase === "sharing" ? shared.includes(id) : false; return <button className={selected === id ? "selected" : ""} onClick={() => setSelected(id)} key={id}><span className="person-avatar">{person.initials}</span><div><b>{person.name}</b><p>{person.responsibility}</p></div><em>{phase === "lobby" ? "Conectado" : completed ? "Concluiu" : "Aguardando"}</em><i>Ver celular →</i></button>; })}</section>
 
-        {step === 3 && <section className="lesson-card authority-lesson">
-          <div className="authority-chain"><article><span>1</span><small>AGENTE DE CONTEXTO</small><h2>Recomenda</h2><p>Interpreta as informações disponíveis e propõe um caminho.</p></article><i>→</i><article><span>2</span><small>MOTOR DE REGRAS</small><h2>Autoriza</h2><p>Aplica a política aprovada pelo banco.</p></article><i>→</i><article><span>3</span><small>CONTA TÉCNICA</small><h2>Executa</h2><p>Altera o estado real da transferência.</p></article></div>
-          <div className="plain-definition"><b>Por que separar?</b><p>Porque uma recomendação pode estar adequada aos dados recebidos, enquanto a regra está desatualizada ou a permissão de execução é ampla demais.</p></div>
-        </section>}
+          <section className="phone-area"><div className="phone-label"><small>VISÃO EXATA DO PARTICIPANTE</small><h2>Celular de {current.name}</h2></div><div className="phone"><div className="phone-top"><span>9:41</span><i /></div><header><span className="tiny-brand">ORQUESTRA</span><b>{current.name}</b></header><div className="phone-content">
+            {phase === "lobby" && <><span className="mobile-step">SALA DE ESPERA</span><h2>Você está conectado.</h2><p>A atividade começará quando o facilitador iniciar a sessão.</p><div className="mobile-responsibility"><small>SUA RESPONSABILIDADE</small><b>{current.responsibility}</b></div><div className="mobile-wait">Aguardando o facilitador…</div></>}
+            {phase === "reading" && <><span className="mobile-step">ETAPA 1 · LEITURA INDIVIDUAL</span><h2>Leia antes de conversar.</h2><p>Uma transferência de R$ 180 mil foi retida automaticamente. O cliente contesta e restam 18 minutos.</p><div className="private-info"><small>INFORMAÇÃO QUE SÓ VOCÊ RECEBEU</small><p>{current.privateInfo}</p></div><button disabled={ready.includes(selected)} onClick={() => actAs(selected)}>{ready.includes(selected) ? "✓ Leitura concluída" : "Terminei a leitura"}</button></>}
+            {phase === "sharing" && <><span className="mobile-step">ETAPA 2 · COMPARTILHAMENTO</span><h2>Sua informação pode mudar a conversa.</h2><p>Explique esta informação com suas próprias palavras e depois registre o compartilhamento.</p><div className="private-info"><small>O QUE VOCÊ PODE COMPARTILHAR</small><p>{current.contribution}</p></div><button disabled={shared.includes(selected)} onClick={() => actAs(selected)}>{shared.includes(selected) ? "✓ Informação compartilhada" : "Compartilhei com a mesa"}</button>{shared.includes(selected) && <div className="mobile-feedback"><b>O que aconteceu</b><p>A informação apareceu na tela compartilhada e está disponível para todos.</p></div>}</>}
+            {phase === "decision" && <><span className="mobile-step">ETAPA 3 · DECISÃO DA MESA</span><h2>Conversem antes de escolher.</h2><p>A decisão é coletiva. Ela será registrada na tela compartilhada, não neste celular.</p><div className="mobile-wait">Abra “Tela compartilhada” no painel do facilitador.</div></>}
+            {phase === "feedback" && <><span className="mobile-step">ETAPA 4 · CONSEQUÊNCIA</span><h2>A decisão produziu um resultado.</h2><div className="mobile-feedback"><b>Feedback para todos</b><p>{decision === "release" ? "A transferência foi liberada por exceção. A operação foi preservada, mas a exposição residual precisa de responsável e registro." : decision === "pause" ? "A automação foi suspensa. Novas retenções param, mas a fila humana ultrapassa a capacidade em menos de uma hora." : "A retenção foi mantida. A revisão humana acontecerá depois que o prazo da transferência terminar."}</p></div></>}
+          </div><footer>ORQ-241 · {phaseLabels[phase]}</footer></div></section>
+        </div>}
 
-        {step === 4 && <section className="lesson-card simulation">
-          <div className="incident"><div><small>INCIDENTE · DIA 17 DO PILOTO</small><h2>A transferência foi retida. O cliente contesta.</h2><p>Restam 18 minutos. A revisão humana costuma levar 40 minutos.</p></div><div><span>Score de fraude</span><b>87%</b></div></div>
-          <div className="simulation-status"><article><small>O QUE FAZER AGORA</small><b>Escolham três evidências antes de decidir.</b></article><article><small>QUANDO HÁ FEEDBACK</small><b>Imediatamente após cada consulta e após a decisão.</b></article><article><small>QUANDO AVANÇA</small><b>Depois de três consultas e uma decisão da mesa.</b></article></div>
-          <div className="evidence-grid">{evidences.map((item) => <button key={item.id} className={opened.includes(item.id) ? "opened" : ""} disabled={opened.includes(item.id) || opened.length >= 3} onClick={() => setOpened([...opened, item.id])}><span>{opened.includes(item.id) ? "✓" : "+"}</span><b>{item.label}</b>{opened.includes(item.id) && <p>{item.answer}</p>}</button>)}</div>
-          {opened.length >= 3 && <div className="decision-area"><small>DECISÃO DA MESA</small><h2>O que fazer com esta transferência?</h2><div>{decisions.map((item) => <button key={item.id} className={decision === item.id ? "selected" : ""} onClick={() => setDecision(item.id)}>{item.title}</button>)}</div>{currentResult && <aside><b>Feedback para todos</b><p>{currentResult}</p></aside>}</div>}
-        </section>}
+        {mainView === "shared" && <section className="shared-screen"><header><small>TELA PROJETADA PARA TODOS</small><h1>{phase === "lobby" ? "A sessão começará em breve" : "Uma transferência de R$ 180 mil foi retida"}</h1><p>{phase === "lobby" ? "Quatro participantes conectados." : "O cliente contesta a decisão. Restam 18 minutos para concluir a operação."}</p></header>{phase === "sharing" || phase === "decision" || phase === "feedback" ? <div className="shared-contributions"><small>INFORMAÇÕES QUE A MESA JÁ COMPARTILHOU</small>{shared.length === 0 && <p>Nenhuma informação compartilhada ainda.</p>}{shared.map((id) => <article key={id}><b>{people[id].responsibility}</b><p>{people[id].contribution}</p></article>)}</div> : <div className="shared-wait"><b>Agora</b><p>Os participantes estão lendo informações diferentes em seus celulares.</p></div>}{phase === "decision" && <div className="table-decision"><small>DECISÃO COLETIVA</small><h2>O que fazer agora?</h2><div><button className={decision === "hold" ? "selected" : ""} onClick={() => setDecision("hold")}>Manter a retenção</button><button className={decision === "release" ? "selected" : ""} onClick={() => setDecision("release")}>Liberar por exceção</button><button className={decision === "pause" ? "selected" : ""} onClick={() => setDecision("pause")}>Suspender automação</button></div></div>}{phase === "feedback" && <div className="collective-result"><small>CONSEQUÊNCIA DA DECISÃO</small><h2>{decision === "release" ? "Operação preservada; exposição assumida" : decision === "pause" ? "Automação contida; operação pressionada" : "Risco contido; prazo perdido"}</h2><p>{decision === "release" ? "A transferência foi liberada por exceção. Agora a organização precisa registrar quem aceitou a exposição residual." : decision === "pause" ? "Novas retenções automáticas foram suspensas. A fila humana ultrapassará sua capacidade em menos de uma hora." : "A retenção permanece, mas a análise humana acontecerá depois do prazo da transferência."}</p></div>}</section>}
 
-        {step === 5 && <section className="lesson-card consolidation">
-          <BusinessFlow technical highlight />
-          <div className="before-after"><article><small>O QUE ACONTECEU</small><h2>O agente consultou uma cópia desatualizada.</h2><p>A viagem existia no CRM, mas ainda não estava disponível para a ferramenta.</p></article><article><small>MUDANÇA PROPOSTA</small><h2>Consultar o CRM original em casos de alto valor.</h2><p>Resolve a defasagem, mas transforma o CRM em dependência crítica e adiciona latência.</p></article></div>
-          <div className="takeaway"><b>Aprendizado</b><span>Redesenhar uma parte altera condições em outras partes. Orquestrar é administrar essas dependências.</span></div>
-        </section>}
+        {mainView === "architecture" && <section className="architecture-view"><header><small>COMO O PILOTO FUNCIONA</small><h1>Do pedido do cliente até a ação no sistema</h1><p>Este mapa usa primeiro linguagem comum. Os nomes técnicos aparecem como explicação, não como ponto de partida.</p></header><div className="architecture-flow"><article><span>1</span><h2>O pedido chega</h2><p>O cliente solicita uma transferência.</p><small>SISTEMA: aplicativo e API do banco</small></article><i>→</i><article><span>2</span><h2>O risco é analisado</h2><p>Um cálculo estima a chance de fraude.</p><small>NOME TÉCNICO: modelo de fraude</small></article><i>→</i><article><span>3</span><h2>O contexto é procurado</h2><p>Um componente consulta viagem e histórico.</p><small>NOME TÉCNICO: agente com ferramentas</small></article><i>→</i><article><span>4</span><h2>A política decide</h2><p>Uma regra determina o que está autorizado.</p><small>NOME TÉCNICO: motor de regras</small></article><i>→</i><article><span>5</span><h2>A ação acontece</h2><p>O dinheiro é liberado ou retido.</p><small>SISTEMA: API de pagamentos</small></article></div><div className="orchestration-explain"><b>Onde está a orquestração?</b><p>Um componente coordena essa sequência, guarda o que já aconteceu e define como o processo continua quando uma etapa falha. Ele pode ser código próprio, um motor de workflow ou uma plataforma.</p></div></section>}
       </section>
     </div>
   </main>;

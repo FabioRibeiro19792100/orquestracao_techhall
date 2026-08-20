@@ -12,6 +12,8 @@ const consoleCss = `.ops-console{padding:22px 0}.ops-console>header{display:flex
 
 const systemCss = `.metrics article strong{display:block;margin-top:9px;padding:6px 7px;font:800 9px Arial;letter-spacing:.06em}.metrics article .sla-pass{background:#e5efe8;color:#245b3e}.metrics article .sla-fail{background:#fae6e1;color:#9f321f}.control-console{display:grid;gap:14px}.control-console>p{margin:0}.control-console .current-setting,.control-console .approval-route{border:1px solid var(--line);padding:15px;background:#f6f5f1}.control-console .current-setting small,.control-console .current-setting b,.control-console .current-setting span,.control-console .approval-route small,.control-console .approval-route b{display:block}.control-console .current-setting small,.control-console .approval-route small{font-size:9px;letter-spacing:.1em;color:#896434}.control-console .current-setting b{font:23px Georgia;margin:6px 0}.control-console .current-setting span{font-size:12px;line-height:1.4;color:var(--muted)}.control-console>section>small{font-size:9px;letter-spacing:.1em;color:#896434;font-weight:800}.control-console h2{font:20px/1.25 Georgia;margin:7px 0}.control-console>section>p{font-size:12px;color:var(--muted)}.control-console .choices button em{display:block;margin-top:9px;padding-top:8px;border-top:1px solid var(--line);font:800 9px Arial;color:#52636c}.control-console .approval-route{background:#e8eef0}.control-console .approval-route b{font-size:12px;line-height:1.4;margin-top:6px}.destination-note{font-size:11px;line-height:1.5;background:#e8eef0;padding:12px}`;
 
+const handoffCss = `.trace-step{position:relative}.trace-step .handoff{display:grid;grid-template-columns:auto 18px 58px 1fr auto;align-items:center;gap:7px;margin:2px 14px 2px 38px;padding:8px 10px;border:1px dashed #c8cdca;background:#f7f7f4;color:#7f8984;font-size:9px}.trace-step .handoff i{font-style:normal;text-align:center}.trace-step .handoff b{font-size:8px;letter-spacing:.09em}.trace-step .handoff code{font-size:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trace-step .handoff.active{border:1px solid var(--gold);background:#fff3da;color:#6e4b18;animation:handoffPulse 1.2s infinite}.trace-step .handoff.done{border-color:#78aa8c;background:#e9f2ec;color:#245b3e}@keyframes handoffPulse{50%{transform:translateY(2px);box-shadow:0 0 0 3px rgba(197,145,64,.12)}}.system-entry .landing-brand em{margin-left:auto;font-style:normal;font-size:9px;letter-spacing:.1em;color:#769688}.operation-list button dl{display:grid;grid-template-columns:120px 1fr}.operation-list button dt{font-size:9px;text-transform:uppercase;color:#896434}.operation-list button dd{font-size:11px}@media(max-width:650px){.trace-step .handoff{grid-template-columns:1fr 18px 58px 1fr}.trace-step .handoff span:last-child{grid-column:4}.operation-list button dl{grid-template-columns:1fr}}`;
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -50,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <head><style dangerouslySetInnerHTML={{ __html: cockpitCss + nerveCss + roleCss + consoleCss + systemCss }} /></head>
+      <head><style dangerouslySetInnerHTML={{ __html: cockpitCss + nerveCss + roleCss + consoleCss + systemCss + handoffCss }} /></head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

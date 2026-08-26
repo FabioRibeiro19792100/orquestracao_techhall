@@ -9,6 +9,7 @@ import "./app/controls.css";
 import "./app/links.css";
 import "./app/integrated.css";
 import "./app/play.css";
+import "./app/evidence.css";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

@@ -1,9 +1,24 @@
 /* Reversão, desfecho humano, autoridade e trilha. Carregado por último. */
 
 /* Fronteira modelo × regra */
-.matrix-row>header{flex-wrap:wrap}
-.layer-authority{flex-basis:100%;margin-left:27px;font:500 9px DM Mono,monospace;font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:#8496a0}
-.layer-authority.strong{color:#102a43}
+.role-row.expanded{box-shadow:none}
+.matrix-title{min-height:64px;padding:17px 20px;border-left:5px solid #176b87;background:#eef3f4}
+.matrix-title b{font:750 19px/1.2 Manrope,Arial,sans-serif;letter-spacing:-.015em;color:#102a43}
+.matrix-title span{align-self:center;font-size:13px;color:#607480}
+.intervention-map:before{padding:18px 20px;border-left:5px solid #b77a2c;background:#f5f1e9;font:750 19px/1.2 Manrope,Arial,sans-serif;letter-spacing:-.015em;color:#102a43}
+.matrix-row{border-top:0;border-bottom:0}
+.matrix-row>header,.matrix-row>.matrix-cell{border-bottom:2px solid #aebfc5}
+.matrix-row.system,.matrix-row.system>header,.matrix-row.system>.matrix-cell{min-height:92px}
+.matrix-row.tool .matrix-cell{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;align-items:start;gap:8px}
+.matrix-row.tool .matrix-cell .matrix-item{width:100%;box-sizing:border-box}
+.flow-section{border-bottom:5px solid #f2f4f3}
+.matrix-row>header{border-right:1px solid #c3cfd3}
+.matrix-row>header{display:grid;grid-template-columns:17px minmax(0,1fr);column-gap:10px;row-gap:4px;align-content:start;align-self:stretch;box-sizing:border-box}
+.matrix-row>header .layer-icon{grid-column:1;grid-row:1;margin-top:1px}
+.matrix-row>header>b{grid-column:2;grid-row:1;font-size:15px;line-height:1.25;font-weight:750;color:#172630}
+.matrix-cell span{font-size:12px}
+.layer-authority{grid-column:2;grid-row:2;justify-self:start;margin:2px 0 0;padding:3px 6px;border:1px solid #d5dee2;border-radius:4px;background:#eef2f3;font:500 10px/1.2 DM Mono,monospace;font-style:normal;letter-spacing:.055em;text-transform:uppercase;color:#607480}
+.layer-authority.strong{border-color:#c8d8dd;background:#e6eff1;color:#23495b}
 .authority-boundary{display:flex;align-items:center;gap:12px;padding:7px 16px;background:#102a43;color:#b6d449;font:500 9px DM Mono,monospace;letter-spacing:.09em}
 .authority-boundary:before,.authority-boundary:after{content:"";flex:1;height:1px;background:#ffffff2e}
 .lesson-mode .authority-boundary{opacity:.45}
@@ -40,6 +55,15 @@
 .model-rationale p b{font-size:12px;color:#102a43}
 .model-rationale p span{font-size:11px;line-height:1.4;color:#657780}
 .model-rationale footer{padding-top:9px;border-top:1px solid #e0e6e8;font-size:10px;line-height:1.4;color:#8496a0}
+
+/* Tecnologia: rótulos ocupam a mesma altura e os nomes dos modelos começam na mesma linha. */
+.role-row:has(>.role-name.tech) .factor-control>header{grid-template-columns:minmax(0,1fr) 24px;grid-template-rows:38px auto;align-items:start}
+.role-row:has(>.role-name.tech) .factor-control>header>span{grid-column:1;grid-row:1}
+.role-row:has(>.role-name.tech) .factor-control>header>.factor-help{grid-column:2;grid-row:1;justify-self:end}
+.role-row:has(>.role-name.tech) .factor-control>header>b{grid-column:1/-1;grid-row:2;justify-self:start;margin-top:4px;text-align:left}
+
+/* O identificador das etapas começa no mesmo topo dos agentes. */
+.flow-axis>.axis-label{justify-content:flex-start;align-self:stretch;padding-top:14px}
 
 /* Ficha do agente dentro do dock */
 .factor-dock.has-sheet{min-height:0;max-height:min(72vh,620px);display:flex;flex-direction:column;overflow:hidden}
